@@ -4,6 +4,7 @@ dist/
 __pycache__/
 *.py[cod]
 .env
+.env.development.local
 *.sqlite3
 *.tsbuildinfo
 frontend/vite.config.js
