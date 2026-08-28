@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.actions import router as actions_router
+from app.routers.commitments import router as commitments_router
 
 
 app = FastAPI(title="Cluely Execute API")
@@ -16,6 +17,7 @@ app.add_middleware(
 )
 
 app.include_router(actions_router)
+app.include_router(commitments_router)
 
 
 @app.get("/api/health")
