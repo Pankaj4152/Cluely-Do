@@ -5,7 +5,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
-from app.models.actions import ActionType, EmailActionDetails
+from app.models.actions import Action, ActionStatus, ActionType, EmailActionDetails
 
 
 class DetectionStatus(StrEnum):
@@ -29,3 +29,13 @@ class UnsupportedCommitment(BaseModel):
 
 
 DetectionResult = DetectedCommitment | UnsupportedCommitment
+
+
+class ProcessedCommitment(BaseModel):
+    """A detected commitment after it has become and resolved an action."""
+
+    status: ActionStatus
+    action: Action
+
+
+ProcessCommitmentResult = ProcessedCommitment | UnsupportedCommitment
