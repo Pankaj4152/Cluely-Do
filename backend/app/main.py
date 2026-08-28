@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routers.actions import router as actions_router
+
 
 app = FastAPI(title="Cluely Execute API")
 
@@ -13,9 +15,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(actions_router)
+
 
 @app.get("/api/health")
 def health_check() -> dict[str, str]:
     """Smallest possible endpoint: confirms the API is running."""
     return {"status": "ok", "service": "cluely-execute-api"}
-

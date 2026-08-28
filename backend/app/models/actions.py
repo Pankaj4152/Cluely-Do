@@ -8,7 +8,6 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-
 class ActionType(StrEnum):
     """The deliberately small set of actions supported by the MVP."""
 
@@ -19,14 +18,14 @@ class ActionType(StrEnum):
 class ActionStatus(StrEnum):
     """Every meaningful point in an action's lifecycle."""
 
-    DETECTED = "DETECTED"
-    RESOLVING = "RESOLVING"
-    NEEDS_INPUT = "NEEDS_INPUT"
-    READY_FOR_APPROVAL = "READY_FOR_APPROVAL"
-    EXECUTING = "EXECUTING"
-    VERIFIED = "VERIFIED"
-    FAILED = "FAILED"
-    CANCELLED = "CANCELLED"
+    DETECTED = "DETECTED"                           # The action has been detected but not yet processed.
+    RESOLVING = "RESOLVING"                         # The action is being processed to determine if it can be executed.
+    NEEDS_INPUT = "NEEDS_INPUT"                     # The action requires additional information from the user before it can be executed.
+    READY_FOR_APPROVAL = "READY_FOR_APPROVAL"       # The action is ready for user approval before it can be executed.
+    EXECUTING = "EXECUTING"                         # The action is currently being executed.
+    VERIFIED = "VERIFIED"                           # The action has been executed and verified to have completed successfully.
+    FAILED = "FAILED"                               # The action has been executed but failed to complete successfully.
+    CANCELLED = "CANCELLED"                         # The action has been cancelled.  
 
 
 # This map is the state machine. Keeping it in code makes invalid transitions
@@ -74,6 +73,33 @@ class CalendarEventDetails(BaseModel):
     attendee_queries: list[str] = Field(default_factory=list)
 
 
+class ResolvedContact(BaseModel):
+    """A contact selected only after deterministic resolution."""
+
+    id: str
+    name: str
+    email: str
+    company: str
+
+
+class ResolvedDocument(BaseModel):
+    """A document selected only after deterministic resolution."""
+
+    id: str
+    name: str
+    path: str
+
+
+class ActionResolution(BaseModel):
+    """Evidence produced while resolving a proposed action."""
+
+    recipient: ResolvedContact | None = None
+    attachment: ResolvedDocument | None = None
+    recipient_candidates: list[ResolvedContact] = Field(default_factory=list)
+    attachment_candidates: list[ResolvedDocument] = Field(default_factory=list)
+    missing_fields: list[str] = Field(default_factory=list)
+
+
 class Action(BaseModel):
     """A proposed action, from detection through a verified result.
 
@@ -85,6 +111,7 @@ class Action(BaseModel):
     type: ActionType
     status: ActionStatus = ActionStatus.DETECTED
     details: EmailActionDetails | CalendarEventDetails
+    resolution: ActionResolution | None = None
     requires_approval: bool = True
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
@@ -102,4 +129,3 @@ class Action(BaseModel):
             )
         self.status = next_status
         self.updated_at = datetime.now()
-

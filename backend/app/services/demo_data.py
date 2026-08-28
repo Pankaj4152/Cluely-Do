@@ -6,7 +6,6 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Contact:
     """A person who can receive an email in the demo environment."""
-
     id: str
     name: str
     email: str
@@ -16,7 +15,6 @@ class Contact:
 @dataclass(frozen=True)
 class DemoDocument:
     """A file the prototype can resolve and later attach to a message."""
-
     id: str
     name: str
     path: str
