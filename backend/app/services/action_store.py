@@ -91,7 +91,7 @@ class ActionStore:
 
         return action
 
-    def approve(self, action_id: UUID) -> Action | None:
+    def approve(self, action_id: UUID, execution_mode: str = "mock") -> Action | None:
         action = self.get(action_id)
         if action is None:
             return None
@@ -101,8 +101,12 @@ class ActionStore:
         action.approved_at = datetime.now()
         action.add_log("Action approved by user")
         action.transition_to(ActionStatus.EXECUTING)
-        action.add_log("Mock email execution started")
-        action.execution = execute_email(action)
+        action.add_log(f"{execution_mode.title()} email execution started")
+        if execution_mode == "gmail":
+            from app.services.gmail_executor import execute_email as execute_gmail_email
+            action.execution = execute_gmail_email(action)
+        else:
+            action.execution = execute_email(action)
 
         if all(check.passed for check in action.execution.verification_checks):
             action.transition_to(ActionStatus.VERIFIED)

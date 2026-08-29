@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = BACKEND_DIR.parent
 load_dotenv(BACKEND_DIR / ".env")
 
 GMAIL_CLIENT_SECRET_PATH = BACKEND_DIR / os.environ.get(
@@ -20,3 +21,4 @@ GMAIL_OAUTH_REDIRECT_URI = os.environ.get(
     "http://127.0.0.1:8000/api/integrations/gmail/callback",
 )
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:5173")
+DEMO_SARAH_EMAIL = os.environ.get("DEMO_SARAH_EMAIL", "sarah@acme.com")

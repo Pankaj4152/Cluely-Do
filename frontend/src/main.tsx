@@ -84,7 +84,8 @@ function App() {
     setIsSubmittingReview(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/actions/${reviewAction.id}/${decision}`, { method: "POST" });
+      const mode = decision === "approve" && gmailStatus?.connected ? "?execution_mode=gmail" : "";
+      const response = await fetch(`${API_BASE_URL}/api/actions/${reviewAction.id}/${decision}${mode}`, { method: "POST" });
       if (!response.ok) throw new Error(`Unable to ${decision} this action.`);
       setReviewAction((await response.json()) as ActionData);
       setResult(null);

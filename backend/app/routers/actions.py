@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 
 from app.models.actions import Action, ActionType, EmailActionDetails
@@ -49,9 +49,9 @@ def resolve_action(action_id: UUID) -> Action:
 
 
 @router.post("/{action_id}/approve", response_model=Action)
-def approve_action(action_id: UUID) -> Action:
+def approve_action(action_id: UUID, execution_mode: str = Query(default="mock", pattern="^(mock|gmail)$")) -> Action:
     try:
-        action = action_store.approve(action_id)
+        action = action_store.approve(action_id, execution_mode)
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
 

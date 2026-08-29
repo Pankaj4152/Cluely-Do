@@ -1,6 +1,7 @@
 """Small, local data set used to make the prototype deterministic."""
 
 from dataclasses import dataclass
+from app.config import DEMO_SARAH_EMAIL
 
 
 @dataclass(frozen=True)
@@ -24,7 +25,7 @@ CONTACTS: tuple[Contact, ...] = (
     Contact(
         id="contact_sarah_chen",
         name="Sarah Chen",
-        email="sarah@acme.com",
+        email=DEMO_SARAH_EMAIL,
         company="Acme",
     ),
     Contact(
@@ -45,7 +46,7 @@ DOCUMENTS: tuple[DemoDocument, ...] = (
     DemoDocument(
         id="document_acme_pricing_deck",
         name="Acme Pricing Deck.pdf",
-        path="demo-files/Acme Pricing Deck.pdf",
+        path="output/pdf/Acme Pricing Deck.pdf",
     ),
     DemoDocument(
         id="document_enterprise_pricing_deck",
@@ -58,4 +59,3 @@ DOCUMENTS: tuple[DemoDocument, ...] = (
         path="demo-files/Q3 Product Roadmap.pdf",
     ),
 )
-

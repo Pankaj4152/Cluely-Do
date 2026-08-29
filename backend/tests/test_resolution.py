@@ -1,6 +1,7 @@
 import unittest
 
 from app.services.resolution import resolve_contact, resolve_document
+from app.config import DEMO_SARAH_EMAIL
 
 
 class ResolutionTests(unittest.TestCase):
@@ -8,7 +9,7 @@ class ResolutionTests(unittest.TestCase):
         result = resolve_contact("Sarah")
 
         self.assertTrue(result.is_resolved)
-        self.assertEqual(result.resolved.email, "sarah@acme.com")
+        self.assertEqual(result.resolved.email, DEMO_SARAH_EMAIL)
 
     def test_alex_is_ambiguous_and_never_auto_selected(self) -> None:
         result = resolve_contact("Alex")

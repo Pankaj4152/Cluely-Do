@@ -3,6 +3,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.config import DEMO_SARAH_EMAIL
 from app.services.action_store import action_store
 
 
@@ -38,7 +39,7 @@ class ActionApiTests(unittest.TestCase):
         body = resolved.json()
         self.assertEqual(resolved.status_code, 200)
         self.assertEqual(body["status"], "READY_FOR_APPROVAL")
-        self.assertEqual(body["resolution"]["recipient"]["email"], "sarah@acme.com")
+        self.assertEqual(body["resolution"]["recipient"]["email"], DEMO_SARAH_EMAIL)
         self.assertEqual(
             body["resolution"]["attachment"]["name"], "Acme Pricing Deck.pdf"
         )
