@@ -261,7 +261,7 @@ is excluded from source control.
 The local callback URI is:
 
 ```text
-http://127.0.0.1:8001/api/integrations/gmail/callback
+http://127.0.0.1:8000/api/integrations/gmail/callback
 ```
 
 The connection currently requests `gmail.modify`, because the next executor

@@ -17,6 +17,6 @@ GMAIL_TOKEN_PATH = BACKEND_DIR / os.environ.get(
 )
 GMAIL_OAUTH_REDIRECT_URI = os.environ.get(
     "GMAIL_OAUTH_REDIRECT_URI",
-    "http://127.0.0.1:8001/api/integrations/gmail/callback",
+    "http://127.0.0.1:8000/api/integrations/gmail/callback",
 )
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:5173")

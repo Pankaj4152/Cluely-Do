@@ -75,7 +75,7 @@ only signs in to Google and approves access. The developer configures the OAuth
 client once, locally:
 
 1. Create a Google OAuth **Web application** client and enable Gmail API.
-2. Add `http://127.0.0.1:8001/api/integrations/gmail/callback` as an authorized
+2. Add `http://127.0.0.1:8000/api/integrations/gmail/callback` as an authorized
    redirect URI.
 3. Store the downloaded client file at `backend/secrets/gmail-client.json`.
 
