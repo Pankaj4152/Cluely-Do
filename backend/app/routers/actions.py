@@ -18,6 +18,10 @@ class CreateEmailActionRequest(BaseModel):
     details: EmailActionDetails
 
 
+class SelectCandidateRequest(BaseModel):
+    candidate_id: str
+
+
 @router.post("", response_model=Action, status_code=status.HTTP_201_CREATED)
 def create_email_action(request: CreateEmailActionRequest) -> Action:
     action = Action(type=ActionType.SEND_EMAIL, details=request.details)
@@ -60,6 +64,30 @@ def approve_action(action_id: UUID) -> Action:
 def cancel_action(action_id: UUID) -> Action:
     try:
         action = action_store.cancel(action_id)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+    if action is None:
+        raise HTTPException(status_code=404, detail="Action not found.")
+    return action
+
+
+@router.post("/{action_id}/select-recipient", response_model=Action)
+def select_recipient(action_id: UUID, request: SelectCandidateRequest) -> Action:
+    try:
+        action = action_store.select_recipient(action_id, request.candidate_id)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+    if action is None:
+        raise HTTPException(status_code=404, detail="Action not found.")
+    return action
+
+
+@router.post("/{action_id}/select-attachment", response_model=Action)
+def select_attachment(action_id: UUID, request: SelectCandidateRequest) -> Action:
+    try:
+        action = action_store.select_attachment(action_id, request.candidate_id)
     except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error)) from error
 

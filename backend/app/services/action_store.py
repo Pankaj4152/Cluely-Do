@@ -126,5 +126,67 @@ class ActionStore:
         action.add_log("Action cancelled by user")
         return action
 
+    def select_recipient(self, action_id: UUID, contact_id: str) -> Action | None:
+        """Accept only a recipient candidate that this action already exposed."""
+        action = self._get_pending_ambiguous_action(action_id)
+        if action is None:
+            return None
+
+        resolution = action.resolution
+        assert resolution is not None
+        selected = next(
+            (candidate for candidate in resolution.recipient_candidates if candidate.id == contact_id),
+            None,
+        )
+        if selected is None:
+            raise ValueError("Selected recipient is not a valid candidate for this action.")
+
+        resolution.recipient = selected
+        action.add_log(f"Recipient selected: {selected.name}")
+        return self._finalise_selection(action)
+
+    def select_attachment(self, action_id: UUID, document_id: str) -> Action | None:
+        """Accept only an attachment candidate that this action already exposed."""
+        action = self._get_pending_ambiguous_action(action_id)
+        if action is None:
+            return None
+
+        resolution = action.resolution
+        assert resolution is not None
+        selected = next(
+            (candidate for candidate in resolution.attachment_candidates if candidate.id == document_id),
+            None,
+        )
+        if selected is None:
+            raise ValueError("Selected attachment is not a valid candidate for this action.")
+
+        resolution.attachment = selected
+        action.add_log(f"Attachment selected: {selected.name}")
+        return self._finalise_selection(action)
+
+    def _get_pending_ambiguous_action(self, action_id: UUID) -> Action | None:
+        action = self.get(action_id)
+        if action is None:
+            return None
+        if action.status is not ActionStatus.NEEDS_INPUT:
+            raise ValueError("Only actions awaiting input can accept a selection.")
+        if action.resolution is None:
+            raise ValueError("Action has no resolution candidates.")
+        return action
+
+    def _finalise_selection(self, action: Action) -> Action:
+        """Re-check whether every required entity is now resolved."""
+        action.transition_to(ActionStatus.RESOLVING)
+        resolution = action.resolution
+        assert resolution is not None
+
+        if resolution.recipient is not None and resolution.attachment is not None:
+            action.transition_to(ActionStatus.READY_FOR_APPROVAL)
+            action.add_log("All required entities resolved; awaiting explicit approval")
+        else:
+            action.transition_to(ActionStatus.NEEDS_INPUT)
+            action.add_log("Additional selection is still required")
+        return action
+
 
 action_store = ActionStore()

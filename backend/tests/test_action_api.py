@@ -92,6 +92,44 @@ class ActionApiTests(unittest.TestCase):
         self.assertEqual(cancelled.json()["status"], "CANCELLED")
         self.assertEqual(approval_attempt.status_code, 409)
 
+    def test_selecting_valid_recipient_resolves_ambiguous_action(self) -> None:
+        created = self.create_email_action("Alex", "Acme pricing deck")
+        self.client.post(f"/api/actions/{created['id']}/resolve")
+
+        selected = self.client.post(
+            f"/api/actions/{created['id']}/select-recipient",
+            json={"candidate_id": "contact_alex_kim"},
+        )
+        body = selected.json()
+
+        self.assertEqual(selected.status_code, 200)
+        self.assertEqual(body["status"], "READY_FOR_APPROVAL")
+        self.assertEqual(body["resolution"]["recipient"]["name"], "Alex Kim")
+        self.assertIn("Recipient selected: Alex Kim", [entry["message"] for entry in body["log"]])
+
+    def test_selecting_valid_attachment_resolves_ambiguous_action(self) -> None:
+        created = self.create_email_action("Sarah", "pricing deck")
+        self.client.post(f"/api/actions/{created['id']}/resolve")
+
+        selected = self.client.post(
+            f"/api/actions/{created['id']}/select-attachment",
+            json={"candidate_id": "document_acme_pricing_deck"},
+        )
+
+        self.assertEqual(selected.status_code, 200)
+        self.assertEqual(selected.json()["status"], "READY_FOR_APPROVAL")
+
+    def test_rejects_recipient_that_was_not_an_exposed_candidate(self) -> None:
+        created = self.create_email_action("Alex", "Acme pricing deck")
+        self.client.post(f"/api/actions/{created['id']}/resolve")
+
+        selected = self.client.post(
+            f"/api/actions/{created['id']}/select-recipient",
+            json={"candidate_id": "contact_sarah_chen"},
+        )
+
+        self.assertEqual(selected.status_code, 409)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -42,6 +42,7 @@ function App() {
   const [reviewAction, setReviewAction] = useState<ActionData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isSelecting, setIsSelecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -88,6 +89,29 @@ function App() {
     }
   }
 
+  async function selectCandidate(kind: "recipient" | "attachment", candidateId: string) {
+    if (!result || result.status !== "NEEDS_INPUT") return;
+    setIsSelecting(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/actions/${result.action.id}/select-${kind}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate_id: candidateId }),
+        },
+      );
+      if (!response.ok) throw new Error("Unable to apply that selection.");
+      const action = (await response.json()) as ActionData;
+      setResult({ status: "READY_FOR_APPROVAL", action });
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Something went wrong.");
+    } finally {
+      setIsSelecting(false);
+    }
+  }
+
   return (
     <main className="app-shell">
       <p className="eyebrow">Cluely Execute</p>
@@ -110,7 +134,7 @@ function App() {
       {error && <p className="error-message">{error}</p>}
       {result?.status === "UNSUPPORTED" && <section className="result-card unsupported"><p className="card-label">No action created</p><h2>No supported commitment detected.</h2><p>{result.reason}</p></section>}
       {result?.status === "READY_FOR_APPROVAL" && <section className="result-card ready"><p className="card-label">Commitment detected</p><h2>Send {result.action.resolution.attachment?.name.replace(".pdf", "")} to {result.action.resolution.recipient?.name}</h2><p className="scheduled">{formatExecutionTime(result.action.details.execute_at)}</p><div className="resolved-entities"><Entity label="Recipient" primary={result.action.resolution.recipient?.name ?? "Unresolved"} secondary={result.action.resolution.recipient?.email} /><Entity label="Attachment" primary={result.action.resolution.attachment?.name ?? "Unresolved"} /></div><button className="primary-button review-button" type="button" onClick={() => setReviewAction(result.action)}>Review action <span>-&gt;</span></button></section>}
-      {result?.status === "NEEDS_INPUT" && <section className="result-card needs-input"><p className="card-label">Input required</p><h2>Which person or file did you mean?</h2>{result.action.resolution.recipient_candidates.length > 1 && <div className="candidate-group"><p>Choose a recipient</p>{result.action.resolution.recipient_candidates.map((candidate) => <button className="candidate" type="button" key={candidate.id}><span>{candidate.name}</span><small>{candidate.company} / {candidate.email}</small></button>)}</div>}{result.action.resolution.attachment_candidates.length > 1 && <div className="candidate-group"><p>Choose an attachment</p>{result.action.resolution.attachment_candidates.map((candidate) => <button className="candidate" type="button" key={candidate.id}>{candidate.name}</button>)}</div>}{result.action.resolution.missing_fields.length > 0 && <p>Missing: {result.action.resolution.missing_fields.join(", ")}</p>}</section>}
+      {result?.status === "NEEDS_INPUT" && <section className="result-card needs-input"><p className="card-label">Input required</p><h2>Which person or file did you mean?</h2>{result.action.resolution.recipient_candidates.length > 1 && <div className="candidate-group"><p>Choose a recipient</p>{result.action.resolution.recipient_candidates.map((candidate) => <button className="candidate" type="button" disabled={isSelecting} key={candidate.id} onClick={() => selectCandidate("recipient", candidate.id)}><span>{candidate.name}</span><small>{candidate.company} / {candidate.email}</small></button>)}</div>}{result.action.resolution.attachment_candidates.length > 1 && <div className="candidate-group"><p>Choose an attachment</p>{result.action.resolution.attachment_candidates.map((candidate) => <button className="candidate" type="button" disabled={isSelecting} key={candidate.id} onClick={() => selectCandidate("attachment", candidate.id)}>{candidate.name}</button>)}</div>}{result.action.resolution.missing_fields.length > 0 && <p>Missing: {result.action.resolution.missing_fields.join(", ")}</p>}</section>}
 
       {reviewAction && <section className="review-card">
         <p className="card-label">{reviewAction.status === "READY_FOR_APPROVAL" ? "Review action" : "Action result"}</p>

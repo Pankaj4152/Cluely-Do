@@ -197,6 +197,10 @@ resolution status.
 
 If two contacts match "Alex," show only those candidates and require a choice.
 
+Recipient and attachment selection are now implemented. The client submits a
+candidate ID only after it was returned for the current action; the backend
+rejects any ID that was not an allowed candidate for that action.
+
 ### C. Review action
 
 Show the exact recipient, attachment/event data, message body, time, and clear
@@ -240,6 +244,8 @@ after mock execution completes.
 | `POST /api/actions/{id}/resolve` | Resolve a newly detected action. |
 | `POST /api/actions/{id}/approve` | Approve, mock-execute, verify, and log a ready action. |
 | `POST /api/actions/{id}/cancel` | Cancel a pending action. |
+| `POST /api/actions/{id}/select-recipient` | Select a returned recipient candidate. |
+| `POST /api/actions/{id}/select-attachment` | Select a returned attachment candidate. |
 
 The action store is currently in memory and resets when FastAPI restarts.
 SQLite persistence is intentionally deferred until the complete user flow is

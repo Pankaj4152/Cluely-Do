@@ -61,7 +61,8 @@ Implemented now:
   or unsupported outcomes.
 - Deterministic detection of the demo phrase: `I'll send Sarah the Acme pricing
   deck tomorrow morning.`
-- Safe local resolution: `Sarah` resolves uniquely; `Alex` requires a choice.
+- Safe local resolution: `Sarah` resolves uniquely; `Alex` and generic pricing
+  deck requests require a candidate choice that the backend validates.
 - Approval, cancellation, a mock Gmail provider result, and verification logs.
 - A review screen that can approve or cancel the resolved email action and then
   displays verification evidence plus the action log.
