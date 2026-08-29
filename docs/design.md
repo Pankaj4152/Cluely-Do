@@ -11,22 +11,21 @@ ambiguous, and it will not perform a consequential action without approval.
 **Primary demo scenario:**
 
 ```text
-Sarah: Could you send me the pricing deck tomorrow morning?
-Pankaj: Absolutely, I'll send it over.
+Pankaj: I'll send Sarah the Acme pricing deck tomorrow morning.
 ```
 
 Expected result:
 
 ```text
 Commitment detected
-  Send the pricing deck to Sarah Chen tomorrow at 9:00 AM
+  Send the Acme pricing deck to Sarah Chen tomorrow at 9:00 AM
 
 Recipient resolved: Sarah Chen <sarah@acme.com>
 Attachment resolved: Acme Pricing Deck.pdf
 
 User reviews and approves
 
-Email is sent/scheduled and then verified
+Mock email is executed and then verified
 ```
 
 ## 2. Supported actions
@@ -72,6 +71,15 @@ The language model may identify a possible commitment and produce structured
 fields. It never chooses among ambiguous entities and never directly controls
 Gmail or Calendar.
 
+### Current implementation boundary
+
+The current detector is a deterministic demo parser rather than an LLM. It
+recognises the supported first-person promise form and returns `UNSUPPORTED`
+for other text. This deliberately keeps the prototype testable while the
+reliability layer is built. A future structured-output LLM can replace this
+single detector without changing resolution, approval, execution, or
+verification.
+
 ## 4. Action lifecycle
 
 ```text
@@ -104,6 +112,9 @@ Allowed transitions:
 | `EXECUTING` | `VERIFIED` | Provider result satisfies verification checks. |
 | `EXECUTING` | `FAILED` | Provider call or verification fails. |
 
+The current action also records timestamped log entries for detection,
+resolution, approval/cancellation, execution, and verification.
+
 ## 5. Resolution and validation rules
 
 ### Recipient
@@ -133,13 +144,21 @@ an email or creating an event cannot.
 
 ## 6. Verification contract
 
-For an email action:
+For the current mock email action:
 
-1. Save the provider message ID returned by Gmail.
-2. Retrieve the provider record using that ID.
-3. Confirm the recipient equals the approved recipient.
-4. Confirm the expected attachment is present.
-5. Record the checks and mark `VERIFIED` only if all pass.
+1. Save a mock provider message ID.
+2. Confirm the resolved recipient exists.
+3. Confirm the resolved attachment exists.
+4. Record `Recipient verified`, `Attachment verified`, and `Provider message
+   created`.
+5. Mark `VERIFIED` only if every check passes.
+
+### Planned Gmail replacement
+
+The mock executor is an intentional interface boundary. Gmail API integration
+will replace only the execution implementation. It must retain the same
+contract: save a provider ID, fetch the created message, verify the approved
+recipient and attachment, and then mark the action `VERIFIED`.
 
 For a calendar event:
 
@@ -190,7 +209,7 @@ Show timestamped log entries and individual verification checks, for example:
 ```text
 ✓ Recipient verified
 ✓ Attachment verified
-✓ Gmail message found
+✓ Provider message created
 ✓ Action complete
 ```
 
@@ -198,11 +217,26 @@ Show timestamped log entries and individual verification checks, for example:
 
 - Given the primary transcript, the UI creates one `SEND_EMAIL` action.
 - Sarah Chen and Acme Pricing Deck resolve from local seeded data.
-- The user sees the complete action before approval.
-- Cancelling produces no execution call.
-- Approval runs a mocked executor and displays a verified result.
+- The backend only approves `READY_FOR_APPROVAL` actions.
+- Cancelling produces no execution call and blocks later approval.
+- Approval runs a mocked executor and records a verified result.
 - A request involving "Alex" requires a human choice.
 - A nonexistent document cannot reach approval.
+
+## 11. API contract (current)
+
+| Endpoint | Purpose |
+| --- | --- |
+| `POST /api/commitments/detect` | Parse a supported transcript into structured email intent. |
+| `POST /api/commitments/process` | Detect, create, and resolve an action in one request. |
+| `GET /api/actions/{id}` | Retrieve the latest action state. |
+| `POST /api/actions/{id}/resolve` | Resolve a newly detected action. |
+| `POST /api/actions/{id}/approve` | Approve, mock-execute, verify, and log a ready action. |
+| `POST /api/actions/{id}/cancel` | Cancel a pending action. |
+
+The action store is currently in memory and resets when FastAPI restarts.
+SQLite persistence is intentionally deferred until the complete user flow is
+integrated and tested.
 
 ## 10. Explicit non-goals
 

@@ -40,6 +40,66 @@ The email flow is the hero experience and receives most of the implementation
 and demo effort. Calendar is included only to show that the design can support
 more than one action type.
 
+## Current prototype status
+
+The first email vertical slice is implemented with local demo data and a
+deterministic mock executor.
+
+```text
+Transcript
+  -> commitment detection
+  -> action creation
+  -> contact and attachment resolution
+  -> explicit approval or cancellation
+  -> mock execution
+  -> verification checks and action log
+```
+
+Implemented now:
+
+- A React screen for submitting a transcript and viewing resolved, ambiguous,
+  or unsupported outcomes.
+- Deterministic detection of the demo phrase: `I'll send Sarah the Acme pricing
+  deck tomorrow morning.`
+- Safe local resolution: `Sarah` resolves uniquely; `Alex` requires a choice.
+- Approval, cancellation, a mock Gmail provider result, and verification logs.
+
+The UI review, approve, cancel, and log screens are the next integration step.
+No real email is sent in the current prototype.
+
+## Run locally
+
+In one terminal, start the API:
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8001
+```
+
+In another terminal, start the frontend:
+
+```powershell
+cd frontend
+npm run dev
+```
+
+Open `http://localhost:5173`. The frontend reads its local API URL from
+`frontend/.env.development`.
+
+Run backend tests with:
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Run the frontend build check with:
+
+```powershell
+cd frontend
+npm run build
+```
+
 ## Design principles
 
 1. LLMs interpret intent; application code resolves and executes it.
