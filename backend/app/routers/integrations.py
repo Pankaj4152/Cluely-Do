@@ -43,6 +43,6 @@ def gmail_callback(code: str | None = None, state: str | None = None, error: str
         return RedirectResponse(f"{FRONTEND_ORIGIN}?gmail=failed")
     try:
         complete_authorization(code, state)
-    except (RuntimeError, ValueError):
+    except Exception:
         return RedirectResponse(f"{FRONTEND_ORIGIN}?gmail=failed")
     return RedirectResponse(f"{FRONTEND_ORIGIN}?gmail=connected")
