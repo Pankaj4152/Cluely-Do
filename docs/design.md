@@ -202,6 +202,10 @@ If two contacts match "Alex," show only those candidates and require a choice.
 Show the exact recipient, attachment/event data, message body, time, and clear
 `Cancel` and `Approve` actions.
 
+The email review screen is now implemented for uniquely resolved actions. Its
+buttons call the approval and cancellation endpoints; the ambiguous selection
+screen remains a subsequent implementation step.
+
 ### D. Execution result
 
 Show timestamped log entries and individual verification checks, for example:
@@ -212,6 +216,9 @@ Show timestamped log entries and individual verification checks, for example:
 ✓ Provider message created
 ✓ Action complete
 ```
+
+This result and the timestamped action log are now displayed in the frontend
+after mock execution completes.
 
 ## 9. Acceptance criteria for the first build
 

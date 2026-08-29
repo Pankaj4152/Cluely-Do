@@ -63,8 +63,8 @@ Implemented now:
   deck tomorrow morning.`
 - Safe local resolution: `Sarah` resolves uniquely; `Alex` requires a choice.
 - Approval, cancellation, a mock Gmail provider result, and verification logs.
-
-The UI review, approve, cancel, and log screens are the next integration step.
+- A review screen that can approve or cancel the resolved email action and then
+  displays verification evidence plus the action log.
 No real email is sent in the current prototype.
 
 ## Run locally
