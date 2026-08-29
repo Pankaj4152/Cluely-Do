@@ -100,6 +100,28 @@ class ActionResolution(BaseModel):
     missing_fields: list[str] = Field(default_factory=list)
 
 
+class VerificationCheck(BaseModel):
+    """One assertion the executor checked after carrying out an action."""
+
+    label: str
+    passed: bool
+
+
+class ExecutionResult(BaseModel):
+    """Provider evidence returned by an executor, mocked or real."""
+
+    provider: str
+    provider_id: str
+    verification_checks: list[VerificationCheck]
+
+
+class ActionLogEntry(BaseModel):
+    """A user-visible record of a consequential lifecycle event."""
+
+    timestamp: datetime = Field(default_factory=datetime.now)
+    message: str
+
+
 class Action(BaseModel):
     """A proposed action, from detection through a verified result.
 
@@ -112,9 +134,17 @@ class Action(BaseModel):
     status: ActionStatus = ActionStatus.DETECTED
     details: EmailActionDetails | CalendarEventDetails
     resolution: ActionResolution | None = None
+    approved_at: datetime | None = None
+    execution: ExecutionResult | None = None
+    log: list[ActionLogEntry] = Field(default_factory=list)
     requires_approval: bool = True
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
+
+    def add_log(self, message: str) -> None:
+        """Record an event in the same object the UI will later display."""
+        self.log.append(ActionLogEntry(message=message))
+        self.updated_at = datetime.now()
 
     def transition_to(self, next_status: ActionStatus) -> None:
         """Move forward only through a valid lifecycle transition.

@@ -42,3 +42,27 @@ def resolve_action(action_id: UUID) -> Action:
     if action is None:
         raise HTTPException(status_code=404, detail="Action not found.")
     return action
+
+
+@router.post("/{action_id}/approve", response_model=Action)
+def approve_action(action_id: UUID) -> Action:
+    try:
+        action = action_store.approve(action_id)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+    if action is None:
+        raise HTTPException(status_code=404, detail="Action not found.")
+    return action
+
+
+@router.post("/{action_id}/cancel", response_model=Action)
+def cancel_action(action_id: UUID) -> Action:
+    try:
+        action = action_store.cancel(action_id)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+    if action is None:
+        raise HTTPException(status_code=404, detail="Action not found.")
+    return action

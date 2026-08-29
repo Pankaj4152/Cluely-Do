@@ -1,5 +1,6 @@
 """Temporary action storage for the first end-to-end prototype slice."""
 
+from datetime import datetime
 from uuid import UUID
 
 from app.models.actions import (
@@ -10,6 +11,7 @@ from app.models.actions import (
     ResolvedContact,
     ResolvedDocument,
 )
+from app.services.mock_executor import execute_email
 from app.services.resolution import resolve_contact, resolve_document
 
 
@@ -24,6 +26,7 @@ class ActionStore:
         self._actions: dict[UUID, Action] = {}
 
     def create(self, action: Action) -> Action:
+        action.add_log("Commitment detected")
         self._actions[action.id] = action
         return action
 
@@ -45,6 +48,7 @@ class ActionStore:
             raise ValueError("Only email resolution is supported in this checkpoint.")
 
         action.transition_to(ActionStatus.RESOLVING)
+        action.add_log("Resolving recipient and attachment")
         contact_result = resolve_contact(action.details.recipient_query)
         document_result = resolve_document(action.details.attachment_query)
 
@@ -78,9 +82,48 @@ class ActionStore:
 
         if contact_result.is_resolved and document_result.is_resolved:
             action.transition_to(ActionStatus.READY_FOR_APPROVAL)
+            action.add_log(f"Recipient resolved: {contact_result.resolved.name}")
+            action.add_log(f"Attachment resolved: {document_result.resolved.name}")
+            action.add_log("Awaiting explicit user approval")
         else:
             action.transition_to(ActionStatus.NEEDS_INPUT)
+            action.add_log("Resolution needs user input")
 
+        return action
+
+    def approve(self, action_id: UUID) -> Action | None:
+        action = self.get(action_id)
+        if action is None:
+            return None
+        if action.status is not ActionStatus.READY_FOR_APPROVAL:
+            raise ValueError("Only actions ready for approval can be approved.")
+
+        action.approved_at = datetime.now()
+        action.add_log("Action approved by user")
+        action.transition_to(ActionStatus.EXECUTING)
+        action.add_log("Mock email execution started")
+        action.execution = execute_email(action)
+
+        if all(check.passed for check in action.execution.verification_checks):
+            action.transition_to(ActionStatus.VERIFIED)
+            for check in action.execution.verification_checks:
+                action.add_log(check.label)
+            action.add_log("Action complete")
+        else:
+            action.transition_to(ActionStatus.FAILED)
+            action.add_log("Verification failed")
+
+        return action
+
+    def cancel(self, action_id: UUID) -> Action | None:
+        action = self.get(action_id)
+        if action is None:
+            return None
+        if action.status not in {ActionStatus.NEEDS_INPUT, ActionStatus.READY_FOR_APPROVAL}:
+            raise ValueError("Only pending actions can be cancelled.")
+
+        action.transition_to(ActionStatus.CANCELLED)
+        action.add_log("Action cancelled by user")
         return action
 
 
