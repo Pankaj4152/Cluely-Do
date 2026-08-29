@@ -66,7 +66,9 @@ Implemented now:
 - Approval, cancellation, a mock Gmail provider result, and verification logs.
 - A review screen that can approve or cancel the resolved email action and then
   displays verification evidence plus the action log.
-No real email is sent in the current prototype.
+When Gmail is connected, the approved email path sends a real message with the
+demo PDF attachment, fetches the Gmail message by provider ID, and verifies the
+recipient and attachment. Automated tests keep using the mock executor.
 
 ## Gmail connection setup (local demo)
 
@@ -80,8 +82,7 @@ client once, locally:
 3. Store the downloaded client file at `backend/secrets/gmail-client.json`.
 
 `backend/secrets/`, OAuth tokens, and `backend/.env` are ignored by Git. The
-connection flow is implemented, but the action executor remains mock-only until
-the Gmail send-and-verify step is added.
+connection flow and real Gmail send-and-verify executor are implemented.
 
 ## Run locally
 

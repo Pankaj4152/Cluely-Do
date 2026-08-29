@@ -155,10 +155,13 @@ For the current mock email action:
 
 ### Planned Gmail replacement
 
-The mock executor is an intentional interface boundary. Gmail API integration
-will replace only the execution implementation. It must retain the same
-contract: save a provider ID, fetch the created message, verify the approved
-recipient and attachment, and then mark the action `VERIFIED`.
+The Gmail executor is now implemented alongside the mock executor. It creates
+a MIME email with the resolved PDF attachment, calls Gmail `messages.send`,
+fetches the returned message ID, verifies the approved recipient and attachment
+filename, and then marks the action `VERIFIED` only if those checks pass.
+
+The mock remains the default for automated tests; a connected browser approval
+uses the Gmail executor.
 
 For a calendar event:
 
