@@ -2,3 +2,6 @@ fastapi==0.115.12
 uvicorn[standard]==0.34.2
 pydantic==2.11.3
 httpx==0.28.1
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib

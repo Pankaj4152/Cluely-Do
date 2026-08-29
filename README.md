@@ -68,6 +68,21 @@ Implemented now:
   displays verification evidence plus the action log.
 No real email is sent in the current prototype.
 
+## Gmail connection setup (local demo)
+
+The application provides a **Connect Gmail** button. The person using the app
+only signs in to Google and approves access. The developer configures the OAuth
+client once, locally:
+
+1. Create a Google OAuth **Web application** client and enable Gmail API.
+2. Add `http://127.0.0.1:8001/api/integrations/gmail/callback` as an authorized
+   redirect URI.
+3. Store the downloaded client file at `backend/secrets/gmail-client.json`.
+
+`backend/secrets/`, OAuth tokens, and `backend/.env` are ignored by Git. The
+connection flow is implemented, but the action executor remains mock-only until
+the Gmail send-and-verify step is added.
+
 ## Run locally
 
 In one terminal, start the API:

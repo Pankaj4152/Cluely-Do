@@ -9,3 +9,5 @@ __pycache__/
 *.tsbuildinfo
 frontend/vite.config.js
 frontend/vite.config.d.ts
+backend/secrets/
+client_secret_*.json

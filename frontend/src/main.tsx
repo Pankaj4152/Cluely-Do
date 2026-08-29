@@ -29,6 +29,7 @@ type ActionData = {
 type ProcessResult =
   | { status: "UNSUPPORTED"; reason: string }
   | { status: "READY_FOR_APPROVAL" | "NEEDS_INPUT"; action: ActionData };
+type GmailStatus = { connected: boolean; email: string | null };
 
 function formatExecutionTime(value: string | null): string {
   if (!value) return "Time needs confirmation";
@@ -37,6 +38,7 @@ function formatExecutionTime(value: string | null): string {
 
 function App() {
   const [apiStatus, setApiStatus] = useState<"checking" | "connected" | "offline">("checking");
+  const [gmailStatus, setGmailStatus] = useState<GmailStatus | null>(null);
   const [transcript, setTranscript] = useState(EXAMPLES.resolved);
   const [result, setResult] = useState<ProcessResult | null>(null);
   const [reviewAction, setReviewAction] = useState<ActionData | null>(null);
@@ -49,6 +51,10 @@ function App() {
     fetch(`${API_BASE_URL}/api/health`)
       .then((response) => setApiStatus(response.ok ? "connected" : "offline"))
       .catch(() => setApiStatus("offline"));
+    fetch(`${API_BASE_URL}/api/integrations/gmail/status`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((status) => setGmailStatus(status as GmailStatus | null))
+      .catch(() => setGmailStatus(null));
   }, []);
 
   const statusCopy = { checking: "Checking API connection...", connected: "Execution API connected", offline: "Execution API unavailable" }[apiStatus];
@@ -117,6 +123,10 @@ function App() {
       <p className="eyebrow">Cluely Execute</p>
       <h1>Turn commitments into completed actions.</h1>
       <p className="subtitle">Paste a conversational commitment. The system resolves it before a consequential action can be reviewed or approved.</p>
+      <div className="gmail-connection">
+        {gmailStatus?.connected ? <span>Gmail connected: {gmailStatus.email}</span> : <span>Gmail not connected</span>}
+        {!gmailStatus?.connected && <a href={`${API_BASE_URL}/api/integrations/gmail/connect`}>Connect Gmail</a>}
+      </div>
 
       <section className="transcript-panel" aria-label="Transcript input">
         <div className="panel-heading"><span>Meeting transcript</span><div className={`connection ${apiStatus}`}><span className="status-dot" />{statusCopy}</div></div>

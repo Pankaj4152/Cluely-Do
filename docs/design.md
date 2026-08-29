@@ -251,6 +251,23 @@ The action store is currently in memory and resets when FastAPI restarts.
 SQLite persistence is intentionally deferred until the complete user flow is
 integrated and tested.
 
+## 12. Gmail OAuth connection (current)
+
+The frontend provides a `Connect Gmail` link. It starts a standard Google OAuth
+Web application flow and returns to the local frontend after consent. Client
+credentials and the resulting refresh token live in `backend/secrets/`, which
+is excluded from source control.
+
+The local callback URI is:
+
+```text
+http://127.0.0.1:8001/api/integrations/gmail/callback
+```
+
+The connection currently requests `gmail.modify`, because the next executor
+must send a message and fetch it again to verify recipient and attachment data.
+Connecting an account does not itself cause an action to send email.
+
 ## 10. Explicit non-goals
 
 - No real-time transcription or capture pipeline.
